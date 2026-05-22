@@ -126,25 +126,22 @@ export default function WorldWallet() {
     const nonceRes = await fetch('/api/nonce')
     const { nonce } = await nonceRes.json()
 
-    const result = await MiniKit.walletAuth({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: any = await MiniKit.walletAuth({
       nonce,
       statement: 'Sign in to World Wallet',
       expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
     })
 
-    const payload = result?.data || (result as any)?.finalPayload || (result as any)
+    const payload = result?.data || result?.finalPayload || result
 
-    if (!payload || payload.status === 'error') {
-      setVerifyError('World App rejected the request')
-      return
-    }
-
-    const address = payload.address?.toLowerCase()
-    if (!address) {
+    if (!payload?.address) {
       setVerifyError('Could not get wallet address')
       return
     }
+
+    const address = payload.address.toLowerCase()
 
     const verifyRes = await fetch('/api/verify-wallet', {
       method: 'POST',
