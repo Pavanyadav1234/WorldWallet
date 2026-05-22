@@ -164,27 +164,29 @@ export default function WorldWallet() {
 }
   // ── Swap ──────────────────────────────────────────────────────────────────────
   const handleSwap = async () => {
-    if (!swapAmount || parseFloat(swapAmount) <= 0 || swapFrom === swapTo) return
-    setSwapping(true)
-    try {
-      const { MiniKit, Tokens, tokenToDecimals } = await import('@worldcoin/minikit-js')
-      MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
-      await new Promise(r => setTimeout(r, 300))
-      await MiniKit.pay({
-        reference: `swap_${Date.now()}`,
-        to: walletAddress!,
-        tokens: [{ symbol: Tokens.WLD, token_amount: tokenToDecimals(parseFloat(swapAmount), Tokens.WLD).toString() }],
-        description: `Swap ${swapAmount} ${swapFrom} → ${swapTo}`,
-      })
-      setSwapDone(true)
-      setTimeout(() => setSwapDone(false), 3000)
-    } catch (e) {
-      console.error('Swap error:', e)
-    } finally {
-      setSwapping(false)
-      setSwapAmount('')
-    }
+  if (!swapAmount || parseFloat(swapAmount) <= 0 || swapFrom === swapTo) return
+  setSwapping(true)
+  try {
+    const { MiniKit } = await import('@worldcoin/minikit-js')
+    MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
+    await new Promise(r => setTimeout(r, 300))
+    const amount = parseFloat(swapAmount)
+    const amountInWei = BigInt(Math.floor(amount * 1e18)).toString()
+    await (MiniKit as any).pay({
+      reference: `swap_${Date.now()}`,
+      to: walletAddress!,
+      tokens: [{ symbol: 'WLD', token_amount: amountInWei }],
+      description: `Swap ${swapAmount} ${swapFrom} → ${swapTo}`,
+    })
+    setSwapDone(true)
+    setTimeout(() => setSwapDone(false), 3000)
+  } catch (e) {
+    console.error('Swap error:', e)
+  } finally {
+    setSwapping(false)
+    setSwapAmount('')
   }
+}
 
   const fromCoin = coins.find(c => c.symbol.toUpperCase() === swapFrom)
   const toCoin   = coins.find(c => c.symbol.toUpperCase() === swapTo)
