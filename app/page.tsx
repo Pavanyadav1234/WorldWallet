@@ -133,7 +133,7 @@ export default function WorldWallet() {
       notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
     })
 
-    const payload = result?.data || result?.finalPayload || result
+    const payload = result?.data || (result as any)?.finalPayload || (result as any)
 
     if (!payload || payload.status === 'error') {
       setVerifyError('World App rejected the request')
