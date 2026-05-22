@@ -116,48 +116,55 @@ export default function WorldWallet() {
 
   // ── World ID + Wallet Auth ────────────────────────────────────────────────────
   const handleVerify = async () => {
-    setVerifyError('')
-    setVerifying(true)
-    try {
-      const { MiniKit } = await import('@worldcoin/minikit-js')
-      MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
-      await new Promise(r => setTimeout(r, 500))
+  setVerifyError('')
+  setVerifying(true)
+  try {
+    const { MiniKit } = await import('@worldcoin/minikit-js')
+    MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
+    await new Promise(r => setTimeout(r, 500))
 
-      const nonceRes = await fetch('/api/nonce')
-      const { nonce } = await nonceRes.json()
+    const nonceRes = await fetch('/api/nonce')
+    const { nonce } = await nonceRes.json()
 
-      const result = await MiniKit.walletAuth({
-        nonce,
-        statement: 'Sign in to World Wallet',
-        expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        notBefore:      new Date(Date.now() - 24 * 60 * 60 * 1000),
-      })
+    const result = await MiniKit.walletAuth({
+      nonce,
+      statement: 'Sign in to World Wallet',
+      expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    })
 
-      if (result?.finalPayload?.status === 'error') {
-        setVerifyError('World App rejected the request')
-        return
-      }
+    const payload = result?.data || result?.finalPayload || result
 
-      const verifyRes = await fetch('/api/verify-wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload: result.finalPayload, nonce }),
-      })
-      const verifyData = await verifyRes.json()
-
-      if (verifyData.success) {
-        setWalletAddress(verifyData.address)
-        setScreen('home')
-      } else {
-        setVerifyError('Verification failed: ' + (verifyData.error || 'Unknown'))
-      }
-    } catch (err) {
-      setVerifyError('Error: ' + String(err))
-    } finally {
-      setVerifying(false)
+    if (!payload || payload.status === 'error') {
+      setVerifyError('World App rejected the request')
+      return
     }
-  }
 
+    const address = payload.address?.toLowerCase()
+    if (!address) {
+      setVerifyError('Could not get wallet address')
+      return
+    }
+
+    const verifyRes = await fetch('/api/verify-wallet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload, nonce }),
+    })
+    const verifyData = await verifyRes.json()
+
+    if (verifyData.success) {
+      setWalletAddress(verifyData.address)
+      setScreen('home')
+    } else {
+      setVerifyError('Verification failed: ' + (verifyData.error || 'Unknown'))
+    }
+  } catch (err) {
+    setVerifyError('Error: ' + String(err))
+  } finally {
+    setVerifying(false)
+  }
+}
   // ── Swap ──────────────────────────────────────────────────────────────────────
   const handleSwap = async () => {
     if (!swapAmount || parseFloat(swapAmount) <= 0 || swapFrom === swapTo) return
