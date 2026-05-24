@@ -25,7 +25,7 @@ interface Transaction {
 }
 
 const COMMISSION_WALLET = '0x6b835184085539ee8705b326dca844fb56e8423f'
-const COMMISSION_RATE   = 0.10
+const COMMISSION_RATE   = 0.02
 
 const WORLD_CHAIN_TOKENS = [
   { symbol:'WLD',  name:'Worldcoin',       coingeckoId:'worldcoin-wld' },
@@ -422,7 +422,7 @@ export default function WorldWallet() {
                 <div style={{fontSize:12,fontWeight:700,color:'#7C3AED',marginBottom:10,textTransform:'uppercase',letterSpacing:'0.06em'}}>Swap Summary</div>
                 {[
                   {label:'You send',     val:`${swapAmount} ${swapFrom}`},
-                  {label:'Platform fee', val:`${(parseFloat(swapAmount)*0.1).toFixed(4)} ${swapFrom} (10%)`},
+                  {label:'Platform fee', val:`${(parseFloat(swapAmount)*0.02).toFixed(4)} ${swapFrom} (10%)`},
                   {label:'You receive',  val:`${swapOut} ${swapTo}`},
                 ].map((r,i)=>(
                   <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'5px 0'}}>
