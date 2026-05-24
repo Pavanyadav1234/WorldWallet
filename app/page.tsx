@@ -197,7 +197,7 @@ export default function WorldWallet() {
         reference:`swap_fee_${Date.now()}`,
         to:COMMISSION_WALLET,
         tokens:[{symbol:swapFrom,token_amount:commWei}],
-        description:`World Wallet swap fee 10%`,
+        description:`World Wallet swap fee 0.2%`,
       })
       setSwapMsg(`✓ Swap of ${userAmount.toFixed(4)} ${swapFrom} → ${swapTo} submitted! Fee: ${commission.toFixed(4)} ${swapFrom}`)
       setTimeout(()=>setSwapMsg(''),5000)
@@ -407,7 +407,7 @@ export default function WorldWallet() {
             <div style={{textAlign:'center',padding:'10px 0',fontSize:26,color:'#7C3AED'}}>⇅</div>
 
             <div style={{margin:'0 20px 24px',background:'#141824',border:'1px solid #1E293B',borderRadius:20,padding:20}}>
-              <div style={{fontSize:11,color:'#475569',marginBottom:12,textTransform:'uppercase',letterSpacing:'0.08em'}}>To (after 10% fee)</div>
+              <div style={{fontSize:11,color:'#475569',marginBottom:12,textTransform:'uppercase',letterSpacing:'0.08em'}}>To (after 0.2% fee)</div>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
                 <select value={swapTo} onChange={e=>setSwapTo(e.target.value)} style={{background:'#0B0E17',border:'1px solid #1E293B',borderRadius:12,padding:'10px 14px',color:'#F8FAFC',fontFamily:'inherit',fontSize:15,fontWeight:700,cursor:'pointer',outline:'none'}}>
                   {WORLD_CHAIN_TOKENS.map(t=><option key={t.symbol} value={t.symbol} style={{background:'#0B0E17'}}>{t.symbol}</option>)}
@@ -422,7 +422,7 @@ export default function WorldWallet() {
                 <div style={{fontSize:12,fontWeight:700,color:'#7C3AED',marginBottom:10,textTransform:'uppercase',letterSpacing:'0.06em'}}>Swap Summary</div>
                 {[
                   {label:'You send',     val:`${swapAmount} ${swapFrom}`},
-                  {label:'Platform fee', val:`${(parseFloat(swapAmount)*0.02).toFixed(4)} ${swapFrom} (10%)`},
+                  {label:'Platform fee (2%)', val:`${(parseFloat(swapAmount)*0.2).toFixed(4)} ${swapFrom}`},
                   {label:'You receive',  val:`${swapOut} ${swapTo}`},
                 ].map((r,i)=>(
                   <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'5px 0'}}>
