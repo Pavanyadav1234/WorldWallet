@@ -28,7 +28,7 @@ const COMMISSION_WALLET = '0x6b835184085539ee8705b326dca844fb56e8423f'
 const COMMISSION_RATE   = 0.10
 
 const WORLD_CHAIN_TOKENS = [
-  { symbol:'WLD',  name:'Worldcoin',       coingeckoId:'worldcoin' },
+  { symbol:'WLD',  name:'Worldcoin',       coingeckoId:'worldcoin-wld' },
   { symbol:'ETH',  name:'Ethereum',        coingeckoId:'ethereum' },
   { symbol:'USDC', name:'USD Coin',        coingeckoId:'usd-coin' },
   { symbol:'WBTC', name:'Wrapped Bitcoin', coingeckoId:'wrapped-bitcoin' },
@@ -86,7 +86,7 @@ export default function WorldWallet() {
     try {
       const [balRes,priceRes] = await Promise.all([
         fetch(`/api/balances?address=${walletAddress}`),
-        fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=worldcoin,ethereum,usd-coin,wrapped-bitcoin,tether,dai,optimism&order=market_cap_desc'),
+        fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=worldcoin-wld,ethereum,usd-coin,wrapped-bitcoin,tether,dai,optimism&order=market_cap_desc&x_cg_demo_api_key='),
       ])
       const {balances} = await balRes.json()
       const priceData  = await priceRes.json()
