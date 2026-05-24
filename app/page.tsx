@@ -184,34 +184,58 @@ export default function WorldWallet() {
 }
   const handleSwap = async () => {
   if (!swapAmount || parseFloat(swapAmount) <= 0 || swapFrom === swapTo) return
+  if (!walletAddress) return
   setSwapping(true)
   setSwapMsg('')
+
   try {
+    // Step 1: Get real swap quote from 0x
+    const quoteRes = await fetch('/api/swap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromToken:   swapFrom,
+        toToken:     swapTo,
+        amount:      swapAmount,
+        userAddress: walletAddress,
+      }),
+    })
+    const quoteData = await quoteRes.json()
+
+    if (!quoteData.success) {
+      setSwapMsg('Quote failed: ' + (quoteData.error || 'Unknown error'))
+      return
+    }
+
+    // Step 2: Execute swap via MiniKit
     const { MiniKit } = await import('@worldcoin/minikit-js')
     MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
     await new Promise(r => setTimeout(r, 300))
 
-    const amount     = parseFloat(swapAmount)
-    const commission = parseFloat((amount * COMMISSION_RATE).toFixed(6))
-    const userAmount = amount - commission
+    const amount    = parseFloat(swapAmount)
+    const decimals  = ['USDC', 'USDT'].includes(swapFrom) ? 6 : 18
+    const amountWei = BigInt(Math.round(amount * Math.pow(10, decimals))).toString()
 
-    // Send full swap amount — 98% to user back + 2% to commission wallet
-    // Show full swap in popup
-    const totalWei = (BigInt(Math.round(amount * 1e6)) * BigInt(1e12)).toString()
-    const commWei  = (BigInt(Math.round(commission * 1e6)) * BigInt(1e12)).toString()
+    const buyDecimals  = ['USDC', 'USDT'].includes(swapTo) ? 6 : 18
+    const buyAmount    = (parseInt(quoteData.buyAmount) / Math.pow(10, buyDecimals)).toFixed(4)
 
+    // Send full amount — 2% fee automatically deducted by 0x to your wallet
     await (MiniKit as any).pay({
-      reference: `swap_${Date.now()}`,
-      to: COMMISSION_WALLET,
+      reference:   `swap_${Date.now()}`,
+      to:          quoteData.transaction?.to || walletAddress,
       tokens: [{
-        symbol: 'WLD',
-        token_amount: totalWei,
+        symbol:       swapFrom,
+        token_amount: amountWei,
       }],
-      description: `Swap ${amount} ${swapFrom} → ~${parseFloat(swapOut||'0').toFixed(4)} ${swapTo} (2% fee included)`,
+      description: `Swap ${amount} ${swapFrom} → ${buyAmount} ${swapTo}`,
     })
 
-    setSwapMsg(`✓ Swap submitted! ${userAmount.toFixed(4)} ${swapFrom} → ${swapTo}`)
-    setTimeout(() => setSwapMsg(''), 5000)
+    setSwapMsg(`✓ Swapped ${amount} ${swapFrom} → ${buyAmount} ${swapTo}!`)
+    setTimeout(() => {
+      setSwapMsg('')
+      fetchPrices()
+    }, 3000)
+
   } catch (e) {
     console.error('Swap error:', e)
     setSwapMsg('Swap failed. Try again.')
