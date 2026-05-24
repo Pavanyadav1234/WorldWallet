@@ -235,7 +235,7 @@ export default function WorldWallet() {
     const up=selectedCoin.price_change_percentage_24h>=0,sym=selectedCoin.symbol,col=COIN_COLORS[sym]||'#4F46E5'
     return (
       <div style={{background:'#0B0E17',minHeight:'100vh',color:'#F8FAFC',fontFamily:'"Inter",system-ui,sans-serif'}}>
-        <div style={{maxWidth:420,margin:'0 auto',paddingBottom:90}}>
+        <div style={{ width:'100%', maxWidth:420, margin:'0 auto', paddingBottom:90, boxSizing:'border-box' as any }}>
           <div style={{padding:'52px 20px 20px',display:'flex',alignItems:'center',gap:12}}>
             <button onClick={()=>setScreen('home')} style={{background:'#1E293B',border:'none',borderRadius:12,width:40,height:40,display:'flex',alignItems:'center',justifyContent:'center',color:'#94A3B8',fontSize:18,cursor:'pointer'}}>←</button>
             <div style={{fontSize:18,fontWeight:700,flex:1}}>{selectedCoin.name}</div>
@@ -285,7 +285,7 @@ export default function WorldWallet() {
   }
 
   return (
-    <div style={{background:'#0B0E17',minHeight:'100vh',color:'#F8FAFC',fontFamily:'"Inter",system-ui,sans-serif'}}>
+    <div style={{ background:'#0B0E17', minHeight:'100vh', color:'#F8FAFC', fontFamily:'"Inter",system-ui,sans-serif', width:'100%', overflowX:'hidden' as any }}>
       <div style={{maxWidth:420,margin:'0 auto',paddingBottom:90}}>
 
         {screen==='home'&&(
@@ -399,7 +399,7 @@ export default function WorldWallet() {
                 <select value={swapFrom} onChange={e=>setSwapFrom(e.target.value)} style={{background:'#0B0E17',border:'1px solid #1E293B',borderRadius:12,padding:'10px 14px',color:'#F8FAFC',fontFamily:'inherit',fontSize:15,fontWeight:700,cursor:'pointer',outline:'none'}}>
                   {WORLD_CHAIN_TOKENS.map(t=><option key={t.symbol} value={t.symbol} style={{background:'#0B0E17'}}>{t.symbol}</option>)}
                 </select>
-                <input type="number" placeholder="0.00" value={swapAmount} onChange={e=>setSwapAmount(e.target.value)} style={{flex:1,background:'none',border:'none',outline:'none',fontSize:32,fontWeight:800,color:'#F8FAFC',textAlign:'right',fontFamily:'inherit'}}/>
+                <input type="number" placeholder="0.00" value={swapAmount} onChange={e => setSwapAmount(e.target.value)} style={{ flex:1, background:'none', border:'none', outline:'none', fontSize:24, fontWeight:800, color:'#F8FAFC', textAlign:'right', fontFamily:'inherit', minWidth:0, width:0 }} />
               </div>
               {fromCoin&&swapAmount&&<div style={{fontSize:12,color:'#475569',marginTop:8,textAlign:'right'}}>≈ ${fmt(parseFloat(swapAmount)*fromCoin.current_price)} · Bal: {fromCoin.balance} {swapFrom}</div>}
             </div>
