@@ -170,13 +170,11 @@ export default function WorldWallet() {
     })
     const vData = await vRes.json()
 
-    if (vData.success) {
-      setWalletAddress(vData.address || address)
+  if (vData.success) {
+      setWalletAddress(vData.address)
       setScreen('home')
     } else {
-      // Even if backend fails, let user in with the address we got
-      setWalletAddress(address)
-      setScreen('home')
+      setVerifyError('Verification failed: ' + (vData.error || 'Unknown'))
     }
   } catch (err) {
     setVerifyError('Error: ' + String(err))
