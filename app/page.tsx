@@ -183,27 +183,43 @@ export default function WorldWallet() {
   }
 }
   const handleSwap = async () => {
-    if (!swapAmount||parseFloat(swapAmount)<=0||swapFrom===swapTo) return
-    setSwapping(true); setSwapMsg('')
-    try {
-      const {MiniKit} = await import('@worldcoin/minikit-js')
-      MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
-      await new Promise(r => setTimeout(r,300))
-      const amount      = parseFloat(swapAmount)
-      const commission  = amount * COMMISSION_RATE
-      const userAmount  = amount - commission
-      const commWei     = BigInt(Math.floor(commission*1e18)).toString()
-      await (MiniKit as any).pay({
-        reference:`swap_fee_${Date.now()}`,
-        to:COMMISSION_WALLET,
-        tokens:[{symbol:swapFrom,token_amount:commWei}],
-        description:`World Wallet swap fee 2%`,
-      })
-      setSwapMsg(`✓ Swap of ${userAmount.toFixed(4)} ${swapFrom} → ${swapTo} submitted! Fee: ${commission.toFixed(4)} ${swapFrom}`)
-      setTimeout(()=>setSwapMsg(''),5000)
-    } catch(e) { setSwapMsg('Swap failed. Try again.') }
-    finally { setSwapping(false); setSwapAmount('') }
+  if (!swapAmount || parseFloat(swapAmount) <= 0 || swapFrom === swapTo) return
+  setSwapping(true)
+  setSwapMsg('')
+  try {
+    const { MiniKit } = await import('@worldcoin/minikit-js')
+    MiniKit.install(process.env.NEXT_PUBLIC_APP_ID!)
+    await new Promise(r => setTimeout(r, 300))
+
+    const amount     = parseFloat(swapAmount)
+    const commission = parseFloat((amount * COMMISSION_RATE).toFixed(6))
+    const userAmount = amount - commission
+
+    // Send full swap amount — 98% to user back + 2% to commission wallet
+    // Show full swap in popup
+    const totalWei = (BigInt(Math.round(amount * 1e6)) * BigInt(1e12)).toString()
+    const commWei  = (BigInt(Math.round(commission * 1e6)) * BigInt(1e12)).toString()
+
+    await (MiniKit as any).pay({
+      reference: `swap_${Date.now()}`,
+      to: COMMISSION_WALLET,
+      tokens: [{
+        symbol: 'WLD',
+        token_amount: totalWei,
+      }],
+      description: `Swap ${amount} ${swapFrom} → ~${parseFloat(swapOut||'0').toFixed(4)} ${swapTo} (2% fee included)`,
+    })
+
+    setSwapMsg(`✓ Swap submitted! ${userAmount.toFixed(4)} ${swapFrom} → ${swapTo}`)
+    setTimeout(() => setSwapMsg(''), 5000)
+  } catch (e) {
+    console.error('Swap error:', e)
+    setSwapMsg('Swap failed. Try again.')
+  } finally {
+    setSwapping(false)
+    setSwapAmount('')
   }
+}
 
   const fromCoin = coins.find(c=>c.symbol===swapFrom)
   const toCoin   = coins.find(c=>c.symbol===swapTo)
@@ -404,7 +420,7 @@ export default function WorldWallet() {
               {fromCoin&&swapAmount&&<div style={{fontSize:12,color:'#475569',marginTop:8,textAlign:'right'}}>≈ ${fmt(parseFloat(swapAmount)*fromCoin.current_price)} · Bal: {fromCoin.balance} {swapFrom}</div>}
             </div>
 
-            <div style={{textAlign:'center',padding:'10px 0',fontSize:26,color:'#7C3AED'}}>⇅</div>
+            <div onClick={() => { const tmp = swapFrom; setSwapFrom(swapTo); setSwapTo(tmp) }} style={{ textAlign:'center', padding:'10px 0', fontSize:26, color:'#7C3AED', cursor:'pointer' }}>⇅</div>
 
             <div style={{margin:'0 20px 24px',background:'#141824',border:'1px solid #1E293B',borderRadius:20,padding:20}}>
               <div style={{fontSize:11,color:'#475569',marginBottom:12,textTransform:'uppercase',letterSpacing:'0.08em'}}>To (after 2% fee)</div>
